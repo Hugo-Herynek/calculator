@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p1>Calculator</p1>
+    
+
+
+
+
+</body>
+<script>
+    //change base
+    function toDec(numl,base){
+        let exp=1;
+        let num=0;
+        let numl1=numl;
+        let dot=numl1.indexOf(".")
+        if (dot==-1){
+            dot=numl1.length;
+        }
+        else{
+            numl1.splice(numl1.indexOf("."),1);
+        }
+        exp=Math.pow(base,dot-1);
+
+        for(let i=0;i<numl1.length;i++){
+            num+=exp*numl1[i];
+            exp=exp/base;
+        }
+        return num;
+    }
+    function fromDec(num,base,precision){
+        if(base>1){
+            return fromDecPosH(num,base,precision);
+        }
+        else if(base>0){
+            return fromDecPosL(num,base,precision);
+        }
+        else if(base>-1){
+
+        }
+        else{
+
+        }
+    }
+    function fromDecPosH(num,base,precision){
+        let numl=[];
+        let num2=Math.abs(num);
+        if(num<0){
+            numl.push("-");
+        }
+        if(num<1 && num>-1){
+            numl.push(0);
+        }
+        for(let i = Math.floor(log(num2,base));i>-precision-1;i--){
+            if(num2==0 && i<0){
+                break;
+            }
+            if(i==-1){
+                numl.push(".");
+            }
+            let exp = Math.pow(base,i);
+            let n=Math.floor(num2/exp);
+            numl.push(n);
+            num2-=n*exp;
+        }
+        return numl;
+    }
+    function fromDecPosL(num,base,precision){
+        let toReturn=[];
+        let x=fromDecPosH(num,1/base,precision);
+        let dot=false;
+        if(num<0){
+            toReturn.push("-");
+            x.pop(0);
+        }
+        for(i=0;i<x.length;i++){
+            if(x[x.length-i-1]!="-"){
+                if(x[x.length-i-1]=="."){
+                dot=true;
+            }
+                else{
+                    toReturn.push(x[x.length-i-1]);
+                    if(dot){
+                        dot=false;
+                        toReturn.push(".");
+                    }
+                }
+            }
+        }
+        return toReturn;
+    }
+    function fromDecNegH(num,base,precision){
+    }
+    function fromDecNegL(num,base,precision){
+        let toReturn=[];
+        let num2=num;
+        let exp = 1;
+        while(exp<=num){
+            exp*=base;
+        }
+        let xd=0
+        while((num2>precision ||num2<-precision )&&xd<100){
+            let x = 0;
+            for(i=0;i<Math.abs(base);i++){
+                if(Math.abs(exp*x-num2)>=Math.abs(exp*i-num2)){
+                    x=i;
+                }
+            }
+            if(Math.abs(x*exp-num2)>Math.abs(x*exp+exp/base-num2)){
+                x+=1;
+            }
+            toReturn.push(x);
+            num2-=exp*x
+            xd++
+            exp/=base;
+            console.log("n:"+num2)
+        }
+        return toReturn;
+    
+    }
+    //symbols
+    function toSymbols(num){
+        let toReturn = "";
+        for(let i=0;i<num.length;i++){
+            if(num[i]=="."){
+                toReturn+=".";
+            }
+            else if(num[i]=="-"){
+                toReturn+="-";
+            }
+            else{
+                toReturn+=symbols[num[i]];
+            }
+        }
+        return toReturn;
+    }
+    function toList(num){
+        let toReturn = [];
+        for(let i=0;i<num.length;i++){
+            if(num[i]=="."){
+                toReturn.push(".");
+            }
+            else if(num[i]=="-"){
+                toReturn.push("-")
+            }
+            else{
+                toReturn.push(symbols.indexOf(num[i]));
+            }
+        }
+        return toReturn;
+    }
+    //assets
+    function log(x,y){
+        let toReturn=Math.log(x)/Math.log(y);
+        return toReturn;
+    }
+    function createButton(id,fce,w,h,t,l,desc,fs){
+        let x = (document.createElement("BUTTON"));
+        x.innerHTML=desc;
+        x.style.width=w.toString()+"px";
+        x.style.height=h.toString()+"px";
+        x.style.top=t.toString()+"px";
+        x.style.left=l.toString()+"px";
+        x.style.position="absolute";
+        x.style.fontSize=fs.toString()+"px";
+        x.id=id.toString();
+        x.onclick=fce;
+        document.body.appendChild(x);
+        return x;
+    }
+    function createParagraph(id,w,h,t,l,desc,fs){
+        let x = document.createElement("p");
+        x.innerHTML=desc;
+        x.style.width=w.toString()+"px";
+        x.style.height=h.toString()+"px";
+        x.style.top=t.toString()+"px";
+        x.style.left=l.toString()+"px";
+        x.style.position="absolute";
+        x.style.fontSize=fs.toString()+"px";
+        x.id=id.toString();
+        document.body.appendChild(x);
+        return x;
+    }
+    function createButtons(r,c){
+        let toReturn=[];
+        for(i=0;i<r;i++){
+            for(j=0;j<c;j++){
+                toReturn.push(createButton(i*c+j,()=>{onPress(event.target)},50,50,50*i+150,50*j+10,symbols[i*c+j],20));
+            }
+        }
+        return toReturn;
+    }
+    function operationButtons(x){
+        let toReturn=[];
+        for(let i=0;i<x.length;i++){
+            toReturn.push(createButton(i,()=>{operation(event.target)},50,50,50*(i+3),560,x[i],20));
+        }
+        return toReturn;
+    }
+    function disableButtons(e,b){
+        for(let i=0;i<b.length;i++){
+            b[i].disabled=false;
+        }
+        for(let i=e;i<b.length;i++){
+            b[i].disabled=true;
+        }
+    }
+    function selectBaseButtons(){
+        toReturn=[];
+        let x = [7,8,9,4,5,6,1,2,3,0,".","<-"];
+        let y = [7,8,9,4,5,6,1,2,3,0,10,11];
+        for(i=0;i<4;i++){
+            for(j=0;j<3;j++){
+                toReturn.push(createButton(y[i*3+j],()=>{changeBase(event.target)},50,50,50*(i+3),660+j*50,x[i*3+j],20));
+            }
+        }
+        toReturn.push(createButton(12,()=>{changeBase(event.target)},100,50,350,660,"SET BASE",20));
+        toReturn.push(createButton(13,()=>{changeBase(event.target)},50,50,350,760,"+/-",20));
+        toReturn.push(createParagraph("select",150,50,80,675,"",30));
+
+    }
+    function changeBase(e){
+        let num=parseFloat(e.id);
+        if(num==10){
+            baseString=baseString.replace(".","");
+            baseString+=".";
+
+        }
+        else if(num==11){
+            baseString=baseString.slice(0,baseString.length-1);
+        }
+        else if(num==12){
+            let x = Math.round(parseFloat(baseString)*100)/100;
+            if((x<=100 && x>1)||(x<1 && x>0)||(x<0 && x>-1)||(x<-1 && x>=-100)){
+                base = x;
+                if(base<1 && base>-1){
+                    disableButtons(Math.ceil(Math.abs(Math.pow(base,-1))),buttons);
+                }
+                else{
+                    disableButtons(Math.ceil(Math.abs(base)),buttons);
+                }
+                baseString = "";
+                calcstr="";
+                calc.innerHTML=calcstr;
+            }
+        }
+        else if(num==13){
+            if(baseString!=""){
+                if(baseString[0]=="-"){
+                    baseString=baseString.slice(1,baseString.length);
+                }
+                else{
+                    baseString="-"+baseString;
+                }
+            }
+        }
+        else{
+            baseString+=e.id;
+        }
+        if(baseString[0]=="0" && baseString[1]!="." && baseString.length>1){
+            baseString=baseString.slice(1,baseString.length);
+        }
+        document.getElementById("select").innerHTML=baseString;
+
+
+    }
+    function operation(e){
+        let num = parseInt(e.id);
+        if(num<7){
+            calcstr+=["+","-","*","/","(",")","."][num];
+            calc.innerHTML=calcstr;
+        }
+        else if(num==7){
+            calcstr=calcstr.slice(0, calcstr.length-1);
+        }
+        else if(num==8){
+            calcstr="";
+            
+        }
+        else{
+            res.innerHTML=calcf(base,calcstr);
+        }
+        calc.innerHTML=calcstr;
+        
+
+
+    }
+    function calcf(base, numst){
+        numst2="";
+        let num="";
+        for(let i=0;i<numst.length;i++){
+            if(symbols.indexOf(numst[i])!=-1 || numst[i]=="."){
+                num+=numst[i];
+            }
+            else{ 
+                if(num!=""){  
+                    numst2+=(toDec(toList(num),base));
+                    num="";
+                }
+                numst2+=numst[i];
+            }
+        }
+        
+        if(num!=""){
+            numst2+=(toDec(toList(num),base));
+        }
+        return toSymbols(fromDec(new Function('return ' + numst2)(),base,10));
+        
+    }
+    function onPress(e){
+        let num=parseInt(e.id);
+        calcstr+=symbols[num];
+        calc.innerHTML=calcstr;
+    }
+    const symbols="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZαβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ";
+    let base = 10;
+    let baseString = "";
+    let buttons = createButtons(10,10);
+    disableButtons(10,buttons);
+    let opb=operationButtons(["+","-","*","/","(",")",".","<-","<<","="])
+    let calc=createParagraph(0,100,10,20,25,"",30);
+    let res=createParagraph(0,100,10,70,25,"",30);
+    let calcstr="";
+    let baseButtons=selectBaseButtons();
+    console.log(fromDecNegL(12,-10,0.01))
+</script>
+</html>
